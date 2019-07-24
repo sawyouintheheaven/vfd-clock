@@ -1,4 +1,4 @@
-BL51 BANKED LINKER/LOCATER V6.22                                                        07/24/2019  14:05:05  PAGE 1
+BL51 BANKED LINKER/LOCATER V6.22                                                        07/24/2019  14:12:51  PAGE 1
 
 
 BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
@@ -59,7 +59,7 @@ LINK MAP OF MODULE:  .\Objects\vfd-6311 (PT6311)
             CODE    1430H     00B7H     UNIT         ?C_INITSEG
             CODE    14E7H     00B0H     UNIT         ?PR?_GETDATA?DHT11
             CODE    1597H     008CH     UNIT         ?C_C51STARTUP
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 2
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 2
 
 
             CODE    1623H     007CH     UNIT         ?PR?_MODIFYTIME?DS3231
@@ -119,7 +119,7 @@ SEGMENT                                            XDATA_GROUP
   +--> ?PR?_GET_TIME?DS3231
   +--> ?PR?CLRALARM?DS3231
 
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 3
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 3
 
 
 ?PR?_GET_TIME?DS3231                             00A6H    0006H
@@ -179,7 +179,7 @@ SEGMENT                                            XDATA_GROUP
 ?PR?MAIN?MAIN                                    -----    -----
   +--> ?PR?T0_INIT?MAIN
   +--> ?PR?ADC_INIT?MAIN
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 4
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 4
 
 
   +--> ?PR?ALARM_INT0_INIT?MAIN
@@ -239,7 +239,7 @@ SEGMENT                                            XDATA_GROUP
 ?PR?_MODIFYTIME?DS3231                           00A7H    0007H
   +--> ?PR?_DEC2BCD?DS3231
   +--> ?PR?_DS3231IIC_WRITE_ONE_BYTE?MYIICFO...
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 5
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 5
 
 
 
@@ -299,7 +299,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   D:00E8H         PUBLIC        P6
   D:00F8H         PUBLIC        P7
   X:0001H         PUBLIC        dspseg
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 6
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 6
 
 
   C:0006H         PUBLIC        Delay1us
@@ -359,7 +359,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:1B31H         LINE#         67
   C:1B35H         LINE#         68
   C:1B44H         LINE#         69
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 7
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 7
 
 
   -------         ENDPROC       _DELAY_MS
@@ -419,7 +419,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:16FEH         LINE#         195
   C:1701H         LINE#         196
   C:1706H         LINE#         198
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 8
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 8
 
 
   C:1709H         LINE#         199
@@ -479,7 +479,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:1745H         PUBLIC        Alarm_Int0
   C:1A7BH         PUBLIC        _getADCresult
   X:00C3H         PUBLIC        a1_sec
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 9
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 9
 
 
   D:00BCH         PUBLIC        ADC_CONTR
@@ -539,7 +539,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:0EBCH         LINE#         77
   C:0EBCH         LINE#         78
   C:0EBCH         LINE#         81
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 10
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 10
 
 
   C:0EBFH         LINE#         82
@@ -599,7 +599,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:1016H         LINE#         144
   C:1016H         LINE#         145
   C:101BH         LINE#         146
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 11
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 11
 
 
   C:101DH         LINE#         147
@@ -659,7 +659,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:13A4H         LINE#         199
   C:13AEH         LINE#         200
   C:13B4H         LINE#         201
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 12
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 12
 
 
   C:13BAH         LINE#         202
@@ -719,7 +719,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:0AA6H         LINE#         255
   C:0AB8H         LINE#         256
   C:0AD2H         LINE#         257
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 13
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 13
 
 
   C:0AD5H         LINE#         258
@@ -779,7 +779,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:0C93H         LINE#         312
   -------         ENDPROC       STATEMACHINEOUTPUT
   -------         PROC          STATEMACHINEINPUT
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 14
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 14
 
 
   -------         DO            
@@ -839,7 +839,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:018CH         LINE#         364
   C:0193H         LINE#         365
   C:01A1H         LINE#         366
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 15
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 15
 
 
   C:01A9H         LINE#         367
@@ -899,7 +899,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:030AH         LINE#         421
   C:033CH         LINE#         422
   C:033CH         LINE#         423
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 16
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 16
 
 
   C:0343H         LINE#         424
@@ -959,7 +959,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:05D5H         LINE#         478
   C:05E2H         LINE#         479
   C:05E2H         LINE#         480
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 17
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 17
 
 
   C:05E9H         LINE#         481
@@ -1019,7 +1019,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:074AH         LINE#         535
   C:074BH         LINE#         536
   C:074BH         LINE#         537
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 18
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 18
 
 
   C:0752H         LINE#         538
@@ -1079,7 +1079,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:08A9H         LINE#         600
   C:08B0H         LINE#         601
   C:08B5H         LINE#         602
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 19
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 19
 
 
   C:08BEH         LINE#         603
@@ -1139,7 +1139,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   -------         ENDPROC       ADC_DIMMING
   -------         PROC          NORMALDISPLAY
   -------         DO            
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 20
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 20
 
 
   X:00A1H         SYMBOL        dat
@@ -1199,7 +1199,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:11D0H         LINE#         720
   C:11D5H         LINE#         721
   C:11DAH         LINE#         722
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 21
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 21
 
 
   C:11DAH         LINE#         723
@@ -1259,7 +1259,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   -------         ENDPROC       _GETADCRESULT
   -------         PROC          T0_INIT
   C:1A93H         LINE#         764
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 22
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 22
 
 
   C:1A93H         LINE#         765
@@ -1319,7 +1319,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   -------         PROC          _DEC2BCD
   D:0007H         SYMBOL        val
   -------         DO            
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 23
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 23
 
 
   D:0007H         SYMBOL        k
@@ -1379,7 +1379,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:1665H         LINE#         53
   C:166CH         LINE#         55
   C:1676H         LINE#         56
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 24
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 24
 
 
   C:167DH         LINE#         58
@@ -1439,7 +1439,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:191CH         LINE#         107
   C:191EH         LINE#         108
   C:191EH         LINE#         109
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 25
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 25
 
 
   C:193DH         LINE#         110
@@ -1499,7 +1499,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   -------         DO            
   D:0006H         SYMBOL        i
   -------         ENDDO         
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 26
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 26
 
 
   C:1B0DH         LINE#         8
@@ -1559,7 +1559,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   -------         PROC          DS3231IIC_ACK
   C:1BD7H         LINE#         102
   C:1BD7H         LINE#         103
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 27
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 27
 
 
   C:1BD7H         LINE#         104
@@ -1619,7 +1619,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:198AH         LINE#         154
   C:198EH         LINE#         155
   C:1993H         LINE#         156
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 28
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 28
 
 
   C:1998H         LINE#         157
@@ -1679,7 +1679,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:1872H         LINE#         199
   -------         ENDPROC       _DS3231IIC_BUFFERREAD
   -------         PROC          _DS3231IIC_REVERSEDIRBUFFERREAD
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 29
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 29
 
 
   X:00B0H         SYMBOL        buffer
@@ -1739,7 +1739,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   D:0005H         SYMBOL        k
   -------         ENDDO         
   C:1B9DH         LINE#         17
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 30
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 30
 
 
   C:1B9DH         LINE#         18
@@ -1799,7 +1799,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:154AH         LINE#         87
   C:154AH         LINE#         88
   C:154CH         LINE#         89
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 31
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 31
 
 
   C:154FH         LINE#         90
@@ -1859,7 +1859,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   D:0088H         PUBLIC        TCON
   D:00C7H         PUBLIC        IAP_CONTR
   D:00C2H         PUBLIC        IAP_DATA
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 32
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 32
 
 
   D:00C6H         PUBLIC        IAP_TRIG
@@ -1919,7 +1919,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\vfd-6311 (PT6311)
   C:1B27H         LINE#         63
   C:1B2AH         LINE#         64
   C:1B2DH         LINE#         65
-BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:05:05  PAGE 33
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/24/2019  14:12:51  PAGE 33
 
 
   C:1B2EH         LINE#         66
