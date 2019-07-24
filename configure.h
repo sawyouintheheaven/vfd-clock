@@ -20,12 +20,12 @@ sbit BEEP=P1^2;//low to enable
 sbit IR_IO = P3^3; // IR?? ??IO
 sbit CLK_INT = P3^2;
 sbit VOPEN=P5^5;
-sbit DATA_IO = P1^0;                //定义数据引脚
-sbit DS3231IIC_SCL=P1^0;
-sbit DS3231IIC_SDA=P3^7;
-sbit DI =P1^4;
-sbit CK	=P1^3;			
-sbit STB =P1^5;	
+sbit DATA_IO = P3^7;                //定义数据引脚
+sbit DS3231IIC_SCL=P1^2;
+sbit DS3231IIC_SDA=P1^3;
+sbit DI =P1^5;
+sbit CK	=P5^5;			
+sbit STB =P5^4;	
 
 #ifndef u8
 	#define u8 unsigned char

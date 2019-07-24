@@ -9,7 +9,7 @@
 #include "dht11.h"
 #include "eeprom.h"
 #include "uart.h"
-//this is new board
+//this is old board
 
 //rom mapper
 //addr data
