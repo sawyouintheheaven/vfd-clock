@@ -6,7 +6,7 @@
 //#include "delay.h"
 //#include "iostm8s103f3.h"		//inc the .h to use bit control
 //new
-#include <stc15.h>
+#include "configure.h"
 
 
 extern u8 dspseg[16];

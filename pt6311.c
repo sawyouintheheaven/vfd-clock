@@ -36,9 +36,7 @@
 //grid:4-15 Ã××Ö¶ÏÂë
 //dspseg 0-3 directly assignment
 //dspseg 4-15 if number add 10 else string decrease 38
-sbit DI =P1^4;
-sbit CK	=P1^3;			
-sbit STB =P1^5;	
+
 
 //for hnm vfd
 //u8 ui_font[]={

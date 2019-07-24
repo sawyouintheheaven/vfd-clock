@@ -1,10 +1,8 @@
 #ifndef __MYIICDS3231_H
 #define __MYIICDS3231_H
 
-#include <stc15.h>
-#ifndef u8
-	#define u8 unsigned char
-#endif
+#include "configure.h"
+
 
 //#include "sys.h"   	
 //transplanted to dsd3231

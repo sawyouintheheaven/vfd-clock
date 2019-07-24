@@ -2,7 +2,7 @@
 #define _DHT11_H_
 
 
-#include "stc15.h"
+#include "configure.h"
 char GetData (u8 *dat);
 char Check (u8 *dat);
 

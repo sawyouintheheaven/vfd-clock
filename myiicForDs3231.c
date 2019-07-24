@@ -2,8 +2,7 @@
 #include <intrins.h>
 #include "ds3231.h"			//only for iic addr
 
-sbit DS3231IIC_SCL=P1^0;
-sbit DS3231IIC_SDA=P3^7;
+
 
 
 void mydelay_us(unsigned char n){

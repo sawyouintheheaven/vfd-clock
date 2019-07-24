@@ -2,7 +2,7 @@
 
 #define JUDGE  30                //用于判断通信的0和1，与单片机速度和晶振频率有关
 
-sbit DATA_IO = P1^0;                //定义数据引脚
+
 
 void delay30us()                //@11.0592MHz
 {

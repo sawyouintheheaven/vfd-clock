@@ -1,4 +1,7 @@
-#include <stc15.h>
+
+//https://github.com/sawyouintheheaven/vfd-clock
+
+#include "configure.h"
 #include <intrins.h>
 #include <string.h>
 #include "pt6311.h"
@@ -6,39 +9,18 @@
 #include "dht11.h"
 #include "eeprom.h"
 #include "uart.h"
-//2019Äê7ÔÂ20ÈÕ15:33:12
-//add:auto back
-//set year
-//add git repo
 //this is new board
 
-//rom
+//rom mapper
 //addr data
 //0 up or down
 //1 on hr
 //2 off hr
+//3 alr hr
+//4 alr min
+//5 alr sec
+//6 alr enable
 
-
-//hardware io
-//key p30 p31 p36
-//adc p11
-//VOPEN p10
-//ds3231 timer int p32
-//ir p33
-//dht11 p37
-//ds3231 iic p12 p13
-//beep p14
-//pt6324 di=15 ck=p55 stb=p54
-
-//sbit BEEP=P1^4;//low to enable
-//sbit IR_IO = P3^3; // IR?? ??IO
-//sbit CLK_INT = P3^2;
-//sbit VOPEN=P1^0;
-
-sbit BEEP=P1^2;//low to enable
-sbit IR_IO = P3^3; // IR?? ??IO
-sbit CLK_INT = P3^2;
-sbit VOPEN=P5^5;
 //var
 unsigned char trg,cont;//for key san
 //flag
@@ -214,7 +196,7 @@ void t0_isr()interrupt 1
 				cnt_tmp=0;
 				tmp_flag=1;
 				if (ctl_flag){
-						if (++cnt_ctl>=4){//40s reverse counter 
+						if (++cnt_ctl>=4){//20s reverse counter 
 							cnt_ctl=0;ctl_flag=0;
 							state=14;
 						}
