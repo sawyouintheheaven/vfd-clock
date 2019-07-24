@@ -1,0 +1,477 @@
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE PT6311
+OBJECT MODULE PLACED IN .\Objects\pt6311.obj
+COMPILER INVOKED BY: D:\keil\C51\BIN\C51.EXE pt6311.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings
+                    -\pt6311.lst) TABS(2) OBJECT(.\Objects\pt6311.obj)
+
+line level    source
+
+   1          #include "pt6311.h"
+   2          #include "stdio.h"
+   3          #include <string.h>
+   4          #include <intrins.h>
+   5          //auth:katachi
+   6          //time:2017-12-30
+   7          //func:driver for pt6311
+   8          //transplant to stm8 time:2018-1-14 17:
+   9          //modify for 51 :2019年4月21日22:30:57
+  10          //auto addr sequence:
+  11          /*
+  12            OpenStrobe_PT6311();
+  13            WriteByte_PT6311(CMD_ModeSetting|0x00);//8grid 20seg
+  14            
+  15            OpenStrobe_PT6311();
+  16            WriteByte_PT6311(CMD_DataSetting|0x00); ////autoAdd addr
+  17            
+  18            OpenStrobe_PT6311();
+  19            WriteByte_PT6311(CMD_AddressSetting|0x00);  //start addr 0x00
+  20            WriteByte_PT6311(0x7e);                     //seg0-seg7
+  21            WriteByte_PT6311(0x18);                     //seg8-seg15
+  22            WriteByte_PT6311(0x2);                      //seg16-seg23   
+  23            
+  24            OpenStrobe_PT6311();
+  25            WriteByte_PT6311(CMD_DisplaySetting|0x0f);//on 14/16
+  26            STB=1;  
+  27          */
+  28          //
+  29          //sbit DI   =P3^5;
+  30          //sbit DO =P1^2;
+  31          //sbit CK =P3^4;      
+  32          //sbit STB =P3^3; 
+  33          //transplant for pt6324
+  34          //hnm18lm05t
+  35          //grid:0-3 special
+  36          //grid:4-15 米字断码
+  37          //dspseg 0-3 directly assignment
+  38          //dspseg 4-15 if number add 10 else string decrease 38
+  39          
+  40          
+  41          //for hnm vfd
+  42          //u8 ui_font[]={
+  43          //0x
+  44          //};
+  45          
+  46          void Delay1us()   //@12.000MHz
+  47          {
+  48   1        _nop_();
+  49   1        _nop_();
+  50   1        _nop_();
+  51   1        _nop_();
+  52   1      }
+  53          void Delay1ms()   //@12.000MHz
+  54          {
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 2   
+
+  55   1        unsigned char i, j;
+  56   1      
+  57   1        i = 12;
+  58   1        j = 169;
+  59   1        do
+  60   1        {
+  61   2          while (--j);
+  62   2        } while (--i);
+  63   1      }
+  64          void  delay_us(u8  n){
+  65   1        while(n--)Delay1us();
+  66   1      }
+  67          void  delay_ms(u32 n){
+  68   1        while(n--)Delay1ms();
+  69   1      }
+  70          const u16 font[]={
+  71            0x77,/*0*/
+  72            0x12,/*1*/
+  73            0x5D,/*2*/
+  74            0x5B,/*3*/
+  75            0x3A,/*4*/
+  76            0x6B,/*5*/
+  77            0x6F,/*6*/
+  78            0x52,/*7*/
+  79            0x7F,/*8*/
+  80            0x7B,/*9*/
+  81            0x21C0,/*'c*///10
+  82            0x00C0,/*-*/
+  83            0x2001,/*二*/
+  84            0x20C1,/*三*/
+  85            0x2B0f,/*四*/
+  86            0x2AC9,/*五*/
+  87            0x14C8,/*六*/
+  88            0x2162,/*七*/
+  89            0x2727,/*0*///18
+  90            0x0224,/*1*/
+  91            0x21C5,/*2*/
+  92            0x22C5,/*3*/
+  93            0x02C6,/*4*/
+  94            0x22C3,/*5*/
+  95            0x23C3,/*6*/
+  96            0x0421,/*7*///0x0205,/*7*/
+  97            0x23C7,/*8*/
+  98            0x22C7,/*9*/
+  99            0x08C8,/*+*///28
+ 100            0x0808,/*|*/ 
+ 101            0x1CF8,/***/
+ 102            0x0420,/*/*/
+ 103            0x1632,/*%*/  
+ 104            0x0000,//clr //33
+ 105            0x2000,/*_*/ //34
+ 106            0x06a4,/*A*/
+ 107            0x2A8D,/*B*/
+ 108            0x2103,/*C*/
+ 109            0x2A0D,/*D*/
+ 110            0x21C3,/*E*/
+ 111            0x01C3,/*F*/
+ 112            0x3383,/*G*/
+ 113            0x03C6,/*H*/
+ 114            0x2809,/*I*/
+ 115            0x1204,/*J*/
+ 116            0x1162,/*K*/
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 3   
+
+ 117            0x2102,/*L*/
+ 118            0x0336,/*M*/
+ 119            0x1316,/*N*/
+ 120            0x2307,/*O*/
+ 121            0x01C7,/*P*/
+ 122            0x3307,/*Q*/
+ 123            0x11C7,/*R*/
+ 124            0x2291,/*S*/
+ 125            0x0809,/*T*/
+ 126            0x2306,/*U*/
+ 127            0x0522,/*V*/
+ 128            0x1706,/*W*/
+ 129            0x1430,/*X*/
+ 130            0x0830,/*Y*/
+ 131            0x2421,/*Z*/
+ 132          };
+ 133          /*
+ 134          //ascii code :
+ 135          0:48 
+ 136          A:65
+ 137          for small number://米
+ 138          dspseg[i]=dspseg[i]-38;
+ 139          for large number://8
+ 140          dspseg[i]=dspseg[i];
+ 141          for alphabet:
+ 142          dspseg[i]=dspseg[i]-38;
+ 143          */
+ 144          u8 AM=0,PM=0,HR=0,COL=0,TIMER=0,CLEAN=0,PROBE=0;
+ 145          u8 dspseg[16];  //character to dis
+ 146          void ReflashDisplay(void){
+ 147   1        u8 i;
+ 148   1        
+ 149   1        OpenStrobe_PT6311();
+ 150   1        WriteByte_PT6311(CMD_AddressSetting|0x00);
+ 151   1        //transcode
+ 152   1        for (i=4;i<16;i++)
+ 153   1          if (dspseg[i]<=9)//number 0-9 to display
+ 154   1            dspseg[i]+=18;
+ 155   1          else if (dspseg[i]>47)//string to display
+ 156   1            dspseg[i]=dspseg[i]-30;
+ 157   1        //send
+ 158   1        for (i=0;i<16;i++){
+ 159   2          if (i<4){
+ 160   3            if ((i==1) || (i==3)){//1 3
+ 161   4              if (dspseg[i]<100){//larger than 100 to clr
+ 162   5                WriteByte_PT6311(font[dspseg[i]%10]<<3|((i==1)?(HR<<2):0));
+ 163   5                WriteByte_PT6311((font[dspseg[i]%10]>>5)|(font[dspseg[i]/10]<<3)|(COL<<2));
+ 164   5                WriteByte_PT6311(font[dspseg[i]/10]>>5);  
+ 165   5                }else{
+ 166   5                  WriteByte_PT6311(0);WriteByte_PT6311(0);WriteByte_PT6311(0);
+ 167   5                }         
+ 168   4            }else{//0 2
+ 169   4              WriteByte_PT6311((i==2)?((PROBE<<3)|(TIMER<<1)|(CLEAN)):0);//timer
+ 170   4              WriteByte_PT6311((font[dspseg[i]]<<3)|PM|(AM<<1));
+ 171   4              WriteByte_PT6311(font[dspseg[i]]>>5);
+ 172   4            }
+ 173   3          }
+ 174   2          else{
+ 175   3            WriteByte_PT6311(font[dspseg[i]]);//low byte
+ 176   3            WriteByte_PT6311(font[dspseg[i]]>>8);//high byte
+ 177   3            WriteByte_PT6311(0);
+ 178   3          }
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 4   
+
+ 179   2        }   
+ 180   1        STB=1;
+ 181   1      }
+ 182          void OpenStrobe_PT6311(void)
+ 183          {
+ 184   1        STB=1;
+ 185   1        delay_us(1);
+ 186   1        STB=0;
+ 187   1      }
+ 188          void Init_PT6311(void)
+ 189          {
+ 190   1        u8 i;
+ 191   1        
+ 192   1        OpenStrobe_PT6311();
+ 193   1        WriteByte_PT6311(CMD_ModeSetting|0x0F);//16 digit 24 setment
+ 194   1      
+ 195   1        OpenStrobe_PT6311();
+ 196   1        WriteByte_PT6311(CMD_DataSetting|0x00); ////autoAdd addr
+ 197   1        
+ 198   1        OpenStrobe_PT6311();
+ 199   1        WriteByte_PT6311(CMD_DisplaySetting|0x8|2);//0x80:on 11/16
+ 200   1        
+ 201   1        //all on
+ 202   1      //  OpenStrobe_PT6311();
+ 203   1      //  WriteByte_PT6311(CMD_AddressSetting|0x00);  
+ 204   1      //  for (i=0;i<48;i++){
+ 205   1      //    WriteByte_PT6311(0xff);
+ 206   1      //  }
+ 207   1      //  delay_ms(1000);
+ 208   1      //  //all clr
+ 209   1      //  OpenStrobe_PT6311();
+ 210   1      //  WriteByte_PT6311(CMD_AddressSetting|0x00);  
+ 211   1      //  for (i=0;i<48;i++){
+ 212   1      //    WriteByte_PT6311(0);
+ 213   1      //  } 
+ 214   1      //  delay_ms(1000);
+ 215   1      //  //show number(only)
+ 216   1      //  dspseg[0]=0;dspseg[1]=12;dspseg[2]=3;dspseg[3]=45;//8字屏 show 012345
+ 217   1      //  for (i=4;i<16;i++)        //米字屏
+ 218   1      //    if (i<10)dspseg[i]=i; 
+ 219   1      //    else dspseg[i]=i-10;
+ 220   1      //  //offset for 米字 only this way need to
+ 221   1      //  for (i=4;i<16;i++)  dspseg[i]+=10;
+ 222   1      //  //send to pt
+ 223   1      //  OpenStrobe_PT6311();  
+ 224   1      //  WriteByte_PT6311(CMD_AddressSetting|0x00);
+ 225   1      //  for (i=0;i<16;i++){
+ 226   1      //    if (i<4){//8字屏
+ 227   1      //      if ((i==1) || (i==3)){//1 3
+ 228   1      //        WriteByte_PT6311(font[dspseg[i]%10]<<3|((i==1)?(HR<<2):0));
+ 229   1      //        WriteByte_PT6311((font[dspseg[i]%10]>>5)|(font[dspseg[i]/10]<<3)|(COL<<2));
+ 230   1      //        WriteByte_PT6311(font[dspseg[i]/10]>>5);        
+ 231   1      //      }else{//0 2
+ 232   1      //        WriteByte_PT6311(0);
+ 233   1      //        WriteByte_PT6311((font[dspseg[i]]<<3)|PM|(AM<<1));
+ 234   1      //        WriteByte_PT6311(font[dspseg[i]]>>5);
+ 235   1      //      }
+ 236   1      //    }
+ 237   1      //    else{//米字屏
+ 238   1      //      WriteByte_PT6311(font[dspseg[i]]);//low byte
+ 239   1      //      WriteByte_PT6311(font[dspseg[i]]>>8);//mid byte
+ 240   1      //      WriteByte_PT6311(0);  //high byte
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 5   
+
+ 241   1      //    }
+ 242   1      //  } 
+ 243   1      //  delay_ms(1000);
+ 244   1        //show aplhabet(also number)
+ 245   1        strcpy(dspseg,"    404YETFOUNDS");
+ 246   1        dspseg[0]=7;dspseg[1]=77;dspseg[2]=7;dspseg[3]=77;//8字屏 show 012345
+ 247   1        ReflashDisplay();
+ 248   1        delay_ms(1000);
+ 249   1        for (i=0;i<16;i++)dspseg[i]=CLR;//clr
+ 250   1      }
+ 251          void WriteByte_PT6311(u8 dat)
+ 252          {
+ 253   1        u8 i;
+ 254   1      
+ 255   1        CK=1;//de-pulldown
+ 256   1        for (i=0;i<8;i++)
+ 257   1        {
+ 258   2          CK=0; //>>200ns
+ 259   2          DI=dat&0x01;    //send a bit to pt6311's data in pin
+ 260   2          dat>>=1;        //lsb first
+ 261   2          CK=1;
+ 262   2        }
+ 263   1      }
+ 264          //u8 ReadByte_PT6311(void)
+ 265          //{
+ 266          //  u8 dat,i;
+ 267          //  CK=1;
+ 268          //  delay_us(2);
+ 269          //  for (i=0;i<8;i++)
+ 270          //  {
+ 271          //    CK=0;//while (j++<10);
+ 272          //    delay_us(1);//tplz tpzl
+ 273          //    dat>>=1;        //lsb first
+ 274          //    if (DO)
+ 275          //      dat|=0x80;        //catch a bit from pt6311's data out pin
+ 276          //    CK=1;
+ 277          //  }
+ 278          //  delay_us(1);//tclk stb
+ 279          //  return dat;
+ 280          //}
+ 281          /******************for stm8 wrong position between grid and positive********************************
+ 282          unsigned int Pow2(u8 y)
+ 283          {
+ 284            u16 x=1;
+ 285            if (y)
+ 286            {
+ 287              while (y--)
+ 288                x*=2;
+ 289            }
+ 290            else
+ 291              x=1;
+ 292            return x;
+ 293          }
+ 294          void TransCoding(void)//recongnize num or char or with colon and transcoding the dspseg to pt6311 ram
+ 295          {
+ 296            u8 i=0,j=0;u16 tmp=0;
+ 297            
+ 298            for (i=0;i<30;i++)dspbuf[i]=0;//clrclr!!!!
+ 299            for (i=0;i<13;i++)//seg==i
+ 300             {
+ 301               if (i==0)  //for segment 0 display temp lvl
+ 302               {
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 6   
+
+ 303                  tmp=Pow2(dspseg[0]) - 1;  
+ 304                  tmp<<=4;  
+ 305               }
+ 306               else if (i==12)//for ui
+ 307               {
+ 308                //dspseg[12]  8bit
+ 309                //      _           _       _     _   , _   _ _ _
+ 310                //        LOWPOWER          CONTINUPAUSE      ALL    ALARM     GPS    WEEK
+ 311                 j=dspseg[12];
+ 312          
+ 313                 if (j&0x08)//GPS
+ 314                   tmp|=0x80; //=
+ 315                 if (j&0x10)//ALARM
+ 316                   tmp|=0x20; //|=
+ 317                 if (j&0x20)//ALL
+ 318                   tmp|=0x300;
+ 319                 if (j&0x40)//CT
+ 320                   tmp|=0xc00;
+ 321                 if (j&0x80)//LP
+ 322                   tmp|=0x7000;
+ 323          
+ 324                 j&=0x07;//get week
+ 325                 if (j)//decrease if not 0 for clr
+ 326                  j--;
+ 327                 if (j>4)//sat sun
+ 328                   tmp|=j+1;
+ 329                 else   //mon to fri
+ 330                   tmp|=1<<j;
+ 331               }
+ 332               else
+ 333               {
+ 334                 //tmp=font['p'-87+i];//ascii to personal font
+ 335                 if (dspseg[i]>=0x80)//num with colon !!!>=  ===
+ 336                 {
+ 337                   dspseg[i]-=0x80;
+ 338                  tmp=font[dspseg[i]]+1;
+ 339                 }
+ 340                 else if (dspseg[i]>90 && dspseg[i]<0x80)//charac
+ 341                   tmp=font[dspseg[i]-87];
+ 342                 else
+ 343                    tmp=font[dspseg[i]];//plain num
+ 344                }
+ 345               //transcoding
+ 346               if(i<8)
+ 347               {
+ 348                  for (j=0;j<15;j++)
+ 349                 {
+ 350                    dspbuf[2*j]|=(tmp&0x1)<<i;
+ 351                    tmp>>=1;   
+ 352                 }
+ 353              }
+ 354               else
+ 355               {
+ 356                  for (j=1;j<16;j++)
+ 357                 {
+ 358                    dspbuf[2*j-1]|=(tmp&0x1)<<(i-8);
+ 359                    tmp>>=1;   
+ 360                 }    
+ 361               }
+ 362            }
+ 363          }
+ 364          void DeDisplayVfd(void)
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 7   
+
+ 365          {
+ 366            u8 len,i;
+ 367          
+ 368              for (i=0;i<4;i++)
+ 369            {
+ 370              delay_ms(500);//delay .5s
+ 371              if (i%2)
+ 372              {
+ 373              dspseg[0]=0;//temp
+ 374              dspseg[1]=36;//clr
+ 375              dspseg[2]=36;dspseg[3]=36;
+ 376              dspseg[4]=36;dspseg[5]=36;
+ 377              dspseg[6]=36;dspseg[7]=36;
+ 378              dspseg[8]=36;dspseg[9]=36;
+ 379              dspseg[10]=36;dspseg[11]=36;
+ 380              dspseg[12]=0;//ui
+ 381              }
+ 382              else
+ 383              {
+ 384              dspseg[0]=10;//temp
+ 385              dspseg[1]='h';
+ 386              dspseg[2]='e';dspseg[3]='l';
+ 387              dspseg[4]='l';dspseg[5]='o';
+ 388              dspseg[6]=36;dspseg[7]='i';
+ 389              dspseg[8]='t';dspseg[9]='s';
+ 390              dspseg[10]='m';dspseg[11]='e';
+ 391              dspseg[12]=CONT|ALL|GPS|ALARM|LP|5;//ui
+ 392              }
+ 393              
+ 394              TransCoding();
+ 395              OpenStrobe_PT6311();
+ 396              WriteByte_PT6311(CMD_ModeSetting|0x0e);//15digits 13sg
+ 397          
+ 398              OpenStrobe_PT6311();
+ 399              WriteByte_PT6311(CMD_DataSetting|0x04); //fixed addr
+ 400          
+ 401              for (len=0;len<30;len++)
+ 402              {  
+ 403              OpenStrobe_PT6311();
+ 404              WriteByte_PT6311(CMD_AddressSetting|ADDR[len]);   
+ 405                WriteByte_PT6311(dspbuf[len]);
+ 406              }
+ 407              OpenStrobe_PT6311();
+ 408              WriteByte_PT6311(CMD_DisplaySetting|0x08|0x04);//on 14/16 
+ 409              STB=1;
+ 410            }
+ 411            
+ 412            //clr
+ 413              for (i=0;i<13;i++)dspseg[i]=36;
+ 414            
+ 415              for (i=11;i;i--)
+ 416            {
+ 417              delay_ms(3);//delay .5s
+ 418          
+ 419            strcpy(dspseg+i,"helloitsme");
+ 420              
+ 421              TransCoding();
+ 422              OpenStrobe_PT6311();
+ 423              WriteByte_PT6311(CMD_ModeSetting|0x0e);//15digits 13sg
+ 424          
+ 425              OpenStrobe_PT6311();
+ 426              WriteByte_PT6311(CMD_DataSetting|0x04); //fixed addr
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 8   
+
+ 427          
+ 428              for (len=0;len<30;len++)
+ 429              {  
+ 430              OpenStrobe_PT6311();
+ 431              WriteByte_PT6311(CMD_AddressSetting|ADDR[len]);   
+ 432                WriteByte_PT6311(dspbuf[len]);
+ 433              }
+ 434              OpenStrobe_PT6311();
+ 435              WriteByte_PT6311(CMD_DisplaySetting|0x08|0x05);//on 14/16 
+ 436              STB=1;
+ 437            }
+ 438          }
+ 439          **********************************************/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    709    ----
+   CONSTANT SIZE    =     17    ----
+   XDATA SIZE       =    145       1
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

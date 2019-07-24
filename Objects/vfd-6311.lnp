@@ -1,0 +1,8 @@
+".\Objects\pt6311.obj",
+".\Objects\main.obj",
+".\Objects\ds3231.obj",
+".\Objects\myiicForDs3231.obj",
+".\Objects\dht11.obj",
+".\Objects\eeprom.obj" 
+TO ".\Objects\vfd-6311" 
+PRINT(".\Listings\vfd-6311.m51") RAMSIZE(256) 

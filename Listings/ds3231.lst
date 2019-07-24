@@ -1,0 +1,155 @@
+C51 COMPILER V9.56.0.0   DS3231                                                            07/24/2019 14:16:19 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE DS3231
+OBJECT MODULE PLACED IN .\Objects\ds3231.obj
+COMPILER INVOKED BY: D:\keil\C51\BIN\C51.EXE ds3231.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings
+                    -\ds3231.lst) TABS(2) OBJECT(.\Objects\ds3231.obj)
+
+line level    source
+
+   1          #include "ds3231.h"
+   2          
+   3          u8 BCD2DEC(u8 val)    //BCD转换为DEC
+   4          {
+   5   1          u8 temp;
+   6   1          temp=(val>>4)*10+(val&0x0f);
+   7   1         
+   8   1          return temp;
+   9   1      }
+  10          
+  11          u8 DEC2BCD(u8 val)    //DEC码转换为BCD码
+  12          {
+  13   1          u8 k;
+  14   1          k=(val%10)+((val/10)<<4);
+  15   1      
+  16   1          return k;
+  17   1      }
+  18          void clrAlarm(void)
+  19          {
+  20   1        DS3231IIC_Write_One_Byte(DS3231_STATUS,0);
+  21   1      }
+  22          void SetAlarm(u8 hou,u8 min,u8 sec,u8 en){
+  23   1        u8 temp=0;
+  24   1        
+  25   1          DS3231IIC_Write_One_Byte(DS3231_CONTROL,0x04|en);//enable alarm 1
+  26   1          DS3231IIC_Write_One_Byte(DS3231_ALARM1WEEK,0x80);//match hr min sec
+  27   1        
+  28   1          temp=DEC2BCD(hou);
+  29   1          DS3231IIC_Write_One_Byte(DS3231_ALARM1HOUR,temp);   //修改时
+  30   1         
+  31   1          temp=DEC2BCD(min);
+  32   1          DS3231IIC_Write_One_Byte(DS3231_ALARM1MINUTE,temp); //修改分
+  33   1         
+  34   1          temp=DEC2BCD(sec);
+  35   1          DS3231IIC_Write_One_Byte(DS3231_SALARM1ECOND,temp); //修改秒
+  36   1        
+  37   1          clrAlarm();
+  38   1      }
+  39          void ModifyTime(u8 year,u8 mon,u8 da,u8 wk,u8 hou,u8 min,u8 sec)
+  40          {
+  41   1          u8 temp=0;
+  42   1        
+  43   1          temp=DEC2BCD(year);
+  44   1          DS3231IIC_Write_One_Byte(DS3231_YEAR,temp);  //修改year
+  45   1        
+  46   1          temp=DEC2BCD(mon);
+  47   1          DS3231IIC_Write_One_Byte(DS3231_MONTH,temp);  //修改月
+  48   1         
+  49   1          temp=DEC2BCD(da);
+  50   1          DS3231IIC_Write_One_Byte(DS3231_DAY,temp);    //修改日
+  51   1        
+  52   1          temp=DEC2BCD(wk);
+  53   1          DS3231IIC_Write_One_Byte(DS3231_WEEK,temp);   //修改年 //week   
+  54   1        
+C51 COMPILER V9.56.0.0   DS3231                                                            07/24/2019 14:16:19 PAGE 2   
+
+  55   1          temp=DEC2BCD(hou);
+  56   1          DS3231IIC_Write_One_Byte(DS3231_HOUR,temp);   //修改时
+  57   1         
+  58   1          temp=DEC2BCD(min);
+  59   1          DS3231IIC_Write_One_Byte(DS3231_MINUTE,temp); //修改分
+  60   1         
+  61   1          temp=DEC2BCD(sec);
+  62   1          DS3231IIC_Write_One_Byte(DS3231_SECOND,temp); //修改秒
+  63   1        
+  64   1      }
+  65          void get_show(unsigned char * normalTime)//5->0 M d w h m s
+  66          {
+  67   1        u8 dat[6],i; //store time
+  68   1        
+  69   1        DS3231IIC_ReverseDirBufferRead(dat,DS3231_MONTH,6);//5->0 M d w h m s
+  70   1        //I2C_EE_BufferRead(dat,4,3);//d m y-->0 1 2
+  71   1        //dat[0]=0x12;dat[1]=0x13;dat[2]=0x22;dat[3]=0x12;dat[4]=0x13;dat[5]=0x22;
+  72   1        
+  73   1        dat[2]&=0x3f;//get true hour
+  74   1        //bcd to dec
+  75   1        for (i=0;i<6;i++) 
+  76   1        {
+  77   2          //dat[i]=BCD2DEC(dat[i]);
+  78   2            normalTime[i]=BCD2DEC(dat[i]);
+  79   2        }
+  80   1          
+  81   1      }
+  82          u8 get_year(void){
+  83   1        u8 y=BCD2DEC(DS3231IIC_Read_One_Byte(DS3231_YEAR));
+  84   1        return y;
+  85   1      }
+  86          void get_date(unsigned char * normalTime)
+  87          {
+  88   1        u8 dat[3],i; //store time
+  89   1        
+  90   1        DS3231IIC_ReverseDirBufferRead(dat,DS3231_MONTH,3);//5->0 M d w
+  91   1      
+  92   1      
+  93   1        //bcd to dec
+  94   1        for (i=0;i<3;i++) //only 3 byte, do not use hardware to get week
+  95   1        {
+  96   2            normalTime[i]=BCD2DEC(dat[i]);
+  97   2        } 
+  98   1      }
+  99          void get_time(unsigned char * normalTime)
+ 100          {
+ 101   1        u8 dat[3],i; //store time
+ 102   1        
+ 103   1        DS3231IIC_ReverseDirBufferRead(dat,DS3231_HOUR,3);//h m s
+ 104   1        //I2C_EE_BufferRead(dat,4,3);//d m y-->0 1 2
+ 105   1        //dat[0]=0x12;dat[1]=0x13;dat[2]=0x22;dat[3]=0x12;dat[4]=0x13;dat[5]=0x22;
+ 106   1        //bcd to dec
+ 107   1        for (i=0;i<3;i++) //only 3 byte, do not use hardware to get week
+ 108   1        {
+ 109   2            normalTime[i]=BCD2DEC(dat[i]);
+ 110   2        }   
+ 111   1      }
+ 112          
+ 113          void get_show_Temperature(unsigned char  *tenTimesTemp)//show temp and date
+ 114          {
+ 115   1          u8 temp[2]; 
+ 116   1        //temph  _(sign) _ _ _, _ _ _ _
+C51 COMPILER V9.56.0.0   DS3231                                                            07/24/2019 14:16:19 PAGE 3   
+
+ 117   1        //templ (point)_ _0 0, 0 0 0 0 
+ 118   1          DS3231IIC_BufferRead(temp,DS3231_TEMPERATUREH,2);  
+ 119   1         
+ 120   1          temp[0]=BCD2DEC(temp[0]);//int,default in positive temperature
+ 121   1          *tenTimesTemp=temp[0];
+ 122   1          //temp[1]=(temp[1]>>6)*25;//decimal 
+ 123   1          //tenTimesTemp=temp[0]+temp[1];
+ 124   1          //tenTimesTemp*=10;
+ 125   1      }
+ 126          
+ 127          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    515    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      37
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

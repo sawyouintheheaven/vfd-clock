@@ -1,0 +1,824 @@
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\keil\C51\BIN\C51.EXE main.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\m
+                    -ain.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          
+   2          //https://github.com/sawyouintheheaven/vfd-clock
+   3          
+   4          #include "configure.h"
+   5          #include <intrins.h>
+   6          #include <string.h>
+   7          #include "pt6311.h"
+   8          #include "ds3231.h"
+   9          #include "dht11.h"
+  10          #include "eeprom.h"
+  11          #include "uart.h"
+  12          //this is old board
+  13          
+  14          //rom mapper
+  15          //addr data
+  16          //0 up or down
+  17          //1 on hr
+  18          //2 off hr
+  19          //3 alr hr
+  20          //4 alr min
+  21          //5 alr sec
+  22          //6 alr enable
+  23          
+  24          //var
+  25          unsigned char trg,cont;//for key san
+  26          //flag
+  27          bit key_flag,flash_flag,tmp_flag,posSecOrTmp;//pos 1 up 0 down
+  28          //IR
+  29          bit Irprot_LastState = 0,Ir_finished=0;
+  30          u8 codeCnt = 0;         //0x1f - - - 1,1 1 1 1 to record decode time
+  31          u8 irTime;
+  32          u8 IR_data[4]; 
+  33          //clk
+  34          //alarm
+  35          u8 alarmMin;
+  36          bit alarm1_flag,alarm1_enable;
+  37          u8 a1_hr,a1_min,a1_sec;
+  38          // set
+  39          u8 year,mth,day,wk,hour,min,sec;//modify time
+  40          u8 state=14;//state machine
+  41          //display
+  42          u8 dis_hr,dis_min,dis_sec;
+  43          u8 dimming=3,mode=1,on_hr,off_hr,off_flag=0;
+  44          //recounter
+  45          u8 cnt_ctl,ctl_flag=0;
+  46              //0-7    //0:auto 1:hand
+  47          //ModifyTime(4,12,5,11,21,0);// 4-12 w5 tm11-21-00
+  48          //0 set year //added for 2-29
+  49          //1 set month
+  50          //2 set day
+  51          //3 set week
+  52          //4 set hour
+  53          //5 set min
+  54          //6 set sec
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 2   
+
+  55          //7 set on hr
+  56          //8 set off hour
+  57          //9 set sec and tmp pos
+  58          //10 set alarm hr
+  59          //11 set alr min
+  60          //12 set alr sec
+  61          //13 set enable alarm
+  62          //14 default time week temperature  date display
+  63          //func
+  64          void t0_init(void);
+  65          void keyscan(void);
+  66          void adc_init();//ch2
+  67          unsigned int getADCresult(u8 ch);//ch1
+  68          void adc_dimming(void);
+  69          void alarm_int0_init(void);
+  70          
+  71          void normalDisplay(void);
+  72          
+  73          void stateMachineInput(void);
+  74          void stateMachineOutput(void);
+  75          void ringing(u8 t);
+  76          //main
+  77          int main(void)
+  78          {
+  79   1        u8 tmp;
+  80   1      
+  81   1        t0_init();
+  82   1        adc_init();
+  83   1        //ModifyTime(6,25,2,13,8,0);
+  84   1        //SetAlarm(21,0,0);
+  85   1        alarm_int0_init();
+  86   1        VOPEN=0;//on
+  87   1        PROBE=!mode;
+  88   1        Init_PT6311();//initialize pt6311 
+  89   1      //  IapEraseSector(0);//erase before write
+  90   1      //  IapProgramByte(0,1);
+  91   1      //  IapProgramByte(1,12);
+  92   1      //  IapProgramByte(2,23);
+  93   1        posSecOrTmp=IapReadByte(0);
+  94   1        on_hr=IapReadByte(1);
+  95   1        off_hr=IapReadByte(2);
+  96   1        a1_hr=IapReadByte(3);
+  97   1        a1_min=IapReadByte(4);
+  98   1        a1_sec=IapReadByte(5);
+  99   1        TIMER=alarm1_enable=IapReadByte(6);
+ 100   1        SetAlarm(a1_hr,a1_min,a1_sec,alarm1_enable);//write
+ 101   1        while (1)
+ 102   1        {
+ 103   2          if(Ir_finished)        //解码完成后，执行键值的功能
+ 104   2          {
+ 105   3            Ir_finished=0;
+ 106   3            if (IR_data[2]){//cap???
+ 107   4                ringing(100);
+ 108   4                alarm1_flag=0;
+ 109   4                VOPEN=0;  //clr alarm   //then ringing
+ 110   4                ctl_flag=1;//pressed  
+ 111   4                cnt_ctl=0;//clr
+ 112   4            }
+ 113   3            //display
+ 114   3            dspseg[4]='I';dspseg[5]='R';dspseg[6]=CLR;
+ 115   3            tmp=IR_data[2]>>4;//bcd
+ 116   3            if (tmp>9)tmp+=7;//display 10 with a
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 3   
+
+ 117   3            dspseg[7]=tmp+10;
+ 118   3            tmp=IR_data[2]&0x0f;//bcd
+ 119   3            if (tmp>9)tmp+=7;//display 10 with a
+ 120   3            dspseg[8]=tmp + 10;
+ 121   3            //cmd to key
+ 122   3            switch (IR_data[2]){
+ 123   4              case 0xe2://close pwr
+ 124   4                break;
+ 125   4              case 0x90://set
+ 126   4                trg=(trg&0x01)|0x01;
+ 127   4                break;
+ 128   4              case 0xe0://+
+ 129   4                trg=(trg&0x02)|0x02;
+ 130   4                break;
+ 131   4              case 0xa8://-
+ 132   4                trg=(trg&0x40)|0x40;
+ 133   4                break;
+ 134   4              case 0x30://
+ 135   4                mode=1;
+ 136   4                dimming=0;
+ 137   4                break;
+ 138   4              case 0x18://
+ 139   4                dimming=1;mode=1;
+ 140   4                break;
+ 141   4              case 0x7a://
+ 142   4                dimming=2;mode=1;
+ 143   4                break;
+ 144   4              case 0x10://
+ 145   4                dimming=3;mode=1;
+ 146   4                break;
+ 147   4              case 0x38://
+ 148   4                dimming=4;mode=1;
+ 149   4                break;
+ 150   4              default:break;
+ 151   4            }
+ 152   3            stateMachineInput();
+ 153   3          }
+ 154   2          if (key_flag){
+ 155   3              key_flag=0;
+ 156   3              keyscan();
+ 157   3              if (trg&0x1 || trg&02 || trg&0x40){//pressed ?
+ 158   4                ringing(250);
+ 159   4                alarm1_flag=0;
+ 160   4                VOPEN=0;  //clr alarm   //then ringing
+ 161   4                ctl_flag=1;//pressed  
+ 162   4                cnt_ctl=0;//clr
+ 163   4              }     
+ 164   3              stateMachineInput();          
+ 165   3          }
+ 166   2          if (flash_flag){
+ 167   3            flash_flag=0;
+ 168   3            //state machine
+ 169   3            stateMachineOutput();
+ 170   3      //      adc_dimming(); //do not frequent move to@if (tmp_flag){//5s
+ 171   3            //reflash
+ 172   3            ReflashDisplay();
+ 173   3           } 
+ 174   2        }
+ 175   1      }
+ 176          void Alarm_Int0() interrupt 0
+ 177          {
+ 178   1        u8 dat[3];
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 4   
+
+ 179   1        get_time(dat);
+ 180   1        alarm1_flag=1;  //闹铃标志位置位
+ 181   1        alarmMin=dat[1]; //初始化闹铃时间
+ 182   1        clrAlarm();//clr
+ 183   1      }
+ 184          void t0_isr()interrupt 1
+ 185          {//256us == .25ms //125us
+ 186   1        static u8 cnt_key,cnt_flash,cnt_tmp;
+ 187   1        
+ 188   1        //flag
+ 189   1        if (++cnt_key>=100){//12.5ms
+ 190   2          cnt_key=0;
+ 191   2          key_flag=1;
+ 192   2          if (++cnt_flash>=20){//500ms
+ 193   3            cnt_flash=0;
+ 194   3            flash_flag=1;
+ 195   3            if (++cnt_tmp>=10){//5s
+ 196   4              cnt_tmp=0;
+ 197   4              tmp_flag=1;
+ 198   4              if (ctl_flag){
+ 199   5                  if (++cnt_ctl>=4){//20s reverse counter 
+ 200   6                    cnt_ctl=0;ctl_flag=0;
+ 201   6                    state=14;
+ 202   6                  }
+ 203   5              }
+ 204   4            }
+ 205   3          }
+ 206   2        }
+ 207   1        //ir
+ 208   1        irTime++;
+ 209   1        if(irTime==240) {             //240*125us = 30ms
+ 210   2          irTime--; //hold 
+ 211   2          codeCnt=0x3f;//finish state rst 1,1 1 1 1 == 0x1f
+ 212   2        } 
+ 213   1        if(IR_IO) Irprot_LastState=1; //last time io state
+ 214   1        else if(Irprot_LastState) {   //negative edge
+ 215   2          Irprot_LastState = 0;       //clr
+ 216   2          if(irTime<24) {             //24*125us=3ms negedge data bit
+ 217   3            codeCnt++; codeCnt &= 0x1f; //decode time ++
+ 218   3            IR_data[codeCnt>>3] <<= 1;  //1,1 1 1 1 == 0x1f, >> 3 == 1 1 (2^3=8 bit) save IR_data index 
+ 219   3          if( irTime>15 )             //15*125us=1.875ms bit 1
+ 220   3            IR_data[codeCnt>>3]++;    //bit 1
+ 221   3          if (codeCnt==31)            
+ 222   3            Ir_finished=1;
+ 223   3          }
+ 224   2          irTime = 0; 
+ 225   2        }
+ 226   1      }
+ 227          void stateMachineOutput(void){
+ 228   1            switch (state){//every .5s update state machine 
+ 229   2              case 0://state 0
+ 230   2                dspseg[4]='S';dspseg[5]='E';dspseg[6]='T';dspseg[7]=CLR;
+ 231   2                dspseg[8]='Y';dspseg[9]='E';dspseg[10]='A';dspseg[11]='R';
+ 232   2                dspseg[12]=2;dspseg[13]=0;dspseg[14]=year/10;dspseg[15]=year%10;          
+ 233   2                break;
+ 234   2              case 1:
+ 235   2                dspseg[4]='S';dspseg[5]='E';dspseg[6]='T';dspseg[7]=CLR;
+ 236   2                dspseg[8]='M';dspseg[9]='T';dspseg[10]='H';dspseg[11]=dspseg[12]=dspseg[13]=CLR;
+ 237   2                dspseg[14]=mth/10;dspseg[15]=mth%10;
+ 238   2                break;
+ 239   2              case 2:
+ 240   2                dspseg[4]='S';dspseg[5]='E';dspseg[6]='T';dspseg[7]=CLR;
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 5   
+
+ 241   2                dspseg[8]='D';dspseg[9]='A';dspseg[10]='Y';dspseg[11]=dspseg[12]=dspseg[13]=CLR;
+ 242   2                dspseg[14]=day/10;dspseg[15]=day%10;     
+ 243   2                break;
+ 244   2              case 3:
+ 245   2                dspseg[4]='S';dspseg[5]='E';dspseg[6]='T';dspseg[7]=CLR;
+ 246   2                dspseg[8]='W';dspseg[9]='E';dspseg[10]='E';dspseg[11]='K';dspseg[12]=dspseg[13]=CLR;
+ 247   2                dspseg[14]=wk+10;dspseg[15]=wk;
+ 248   2                break;
+ 249   2              case 4:
+ 250   2                dspseg[4]='S';dspseg[5]='E';dspseg[6]='T';dspseg[7]=CLR;
+ 251   2                dspseg[8]='H';dspseg[9]='O';dspseg[10]='U';dspseg[11]='R';dspseg[12]=dspseg[13]=CLR;
+ 252   2                dspseg[14]=hour/10;dspseg[15]=hour%10;
+ 253   2                break;
+ 254   2              case 5:
+ 255   2                dspseg[4]='S';dspseg[5]='E';dspseg[6]='T';dspseg[7]=CLR;
+ 256   2                dspseg[8]='M';dspseg[9]='I';dspseg[10]='N';dspseg[11]=dspseg[12]=dspseg[13]=CLR;
+ 257   2                dspseg[14]=min/10;dspseg[15]=min%10;
+ 258   2                break;
+ 259   2              case 6:
+ 260   2                dspseg[4]='S';dspseg[5]='E';dspseg[6]='T';dspseg[7]=CLR;
+ 261   2                dspseg[8]='S';dspseg[9]='E';dspseg[10]='C';dspseg[11]=dspseg[12]=dspseg[13]=CLR;
+ 262   2                dspseg[14]=sec/10;dspseg[15]=sec%10;
+ 263   2                break;
+ 264   2              case 7:
+ 265   2                dspseg[4]='S';dspseg[5]='E';dspseg[6]='T';dspseg[7]=CLR;
+ 266   2                dspseg[8]='O';dspseg[9]='N';dspseg[10]=CLR;dspseg[11]='H';dspseg[12]='R';dspseg[13]=CLR;          
+ 267   2                dspseg[14]=on_hr/10;dspseg[15]=on_hr%10;
+ 268   2                break;
+ 269   2              case 8:
+ 270   2                dspseg[4]='S';dspseg[5]='E';dspseg[6]='T';dspseg[7]=CLR;
+ 271   2                dspseg[8]='O';dspseg[9]='F';dspseg[10]='F';dspseg[11]='H';dspseg[12]='R';dspseg[13]=CLR;
+ 272   2                dspseg[14]=off_hr/10;dspseg[15]=off_hr%10;
+ 273   2                break;
+ 274   2              case 9://set pos
+ 275   2                dspseg[4]='S';dspseg[5]='E';dspseg[6]='T';dspseg[7]=CLR;dspseg[8]='P';dspseg[9]='O';dspseg[10]='S';ds
+             -pseg[11]=CLR;
+ 276   2                if (posSecOrTmp){
+ 277   3                  dspseg[12]='U';dspseg[13]='P';dspseg[14]=dspseg[15]=CLR;
+ 278   3                }
+ 279   2                else{
+ 280   3                  dspseg[12]='D';dspseg[13]='O';dspseg[14]='W';dspseg[15]='N';
+ 281   3                }
+ 282   2                break;
+ 283   2              case 10://alr hour
+ 284   2                dspseg[4]='A';dspseg[5]='L';dspseg[6]='M';dspseg[7]=CLR;
+ 285   2                dspseg[8]='H';dspseg[9]='O';dspseg[10]='U';dspseg[11]='R';dspseg[12]=dspseg[13]=CLR;
+ 286   2                dspseg[14]=a1_hr/10;dspseg[15]=a1_hr%10;
+ 287   2                break;
+ 288   2              case 11:
+ 289   2                dspseg[4]='A';dspseg[5]='L';dspseg[6]='M';dspseg[7]=CLR;
+ 290   2                dspseg[8]='M';dspseg[9]='I';dspseg[10]='N';dspseg[11]=dspseg[12]=dspseg[13]=CLR;
+ 291   2                dspseg[14]=a1_min/10;dspseg[15]=a1_min%10;
+ 292   2                break;
+ 293   2              case 12:
+ 294   2                dspseg[4]='A';dspseg[5]='L';dspseg[6]='M';dspseg[7]=CLR;
+ 295   2                dspseg[8]='S';dspseg[9]='E';dspseg[10]='C';dspseg[11]=dspseg[12]=dspseg[13]=CLR;
+ 296   2                dspseg[14]=a1_sec/10;dspseg[15]=a1_sec%10;
+ 297   2                break;
+ 298   2              case 13:
+ 299   2                dspseg[4]='A';dspseg[5]='L';dspseg[6]='M';dspseg[7]=CLR;dspseg[8]='S';dspseg[9]='W';dspseg[10]=dspseg
+             -[11]=CLR;
+ 300   2                if (alarm1_enable){
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 6   
+
+ 301   3                  dspseg[12]='O';dspseg[13]='N';dspseg[14]=dspseg[15]=CLR;
+ 302   3                }
+ 303   2                else{
+ 304   3                  dspseg[12]='O';dspseg[13]='F';dspseg[14]='F';dspseg[15]=CLR;
+ 305   3                }
+ 306   2                break;
+ 307   2              case 14:
+ 308   2                normalDisplay();
+ 309   2              break;
+ 310   2              default:break;
+ 311   2            }
+ 312   1      }
+ 313          void stateMachineInput(void){    
+ 314   1          u8 dat[6];static u8 hold;
+ 315   1          if (state){
+ 316   2              get_show(dat);//5->0 M d w h m s
+ 317   2              min=dat[4];sec=dat[5];//get current time to modify  
+ 318   2          }     
+ 319   1          switch (state){
+ 320   2              case 0://set year
+ 321   2              if (trg&0x01){//set
+ 322   3                  state=1;
+ 323   3                }
+ 324   2              if (trg&0x40)//short press 
+ 325   2                if (++year>99) year=0;
+ 326   2              if (trg&0x02)//short press 
+ 327   2                if (--year >99) year=99;
+ 328   2              if (cont&0x40)//long press
+ 329   2                if (++hold>=22){
+ 330   3                  hold=0;
+ 331   3                  if (++year>99) year=0;
+ 332   3              }
+ 333   2              if (cont&0x02)//long press
+ 334   2                if (++hold>=22){
+ 335   3                  hold=0;
+ 336   3                  if (--year >99) year=99;
+ 337   3              }         
+ 338   2              break;
+ 339   2              case 1://set mth
+ 340   2              if (trg&0x01){//set
+ 341   3                  state=2;
+ 342   3                }
+ 343   2          if (trg&0x40)//short press 
+ 344   2            if (++mth>12) mth=1;
+ 345   2                if (trg&0x02)//short press 
+ 346   2                  if (--mth <1) mth=12;
+ 347   2          if (cont&0x40)//long press
+ 348   2          if (++hold>=22){
+ 349   3            hold=0;
+ 350   3            if (++mth>12) mth=1;
+ 351   3          }
+ 352   2          if (cont&0x02)//long press
+ 353   2          if (++hold>=22){
+ 354   3            hold=0;
+ 355   3            if (--mth <1) mth=12;
+ 356   3          }
+ 357   2                break;
+ 358   2              case 2://set day
+ 359   2              if (trg&0x01){//set
+ 360   3                  state=3;
+ 361   3                }
+ 362   2                if (trg&0x40)//+
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 7   
+
+ 363   2                  if (++day>31) day=1;
+ 364   2                if (trg&0x02)//-
+ 365   2                  if (--day >31) day=31;
+ 366   2          if (cont&0x40)//long press
+ 367   2          if (++hold>=22){
+ 368   3            hold=0;
+ 369   3            if (++day>31) day=1;
+ 370   3          }
+ 371   2          if (cont&0x02)//long press
+ 372   2          if (++hold>=22){
+ 373   3            hold=0;
+ 374   3            if (--day >31) day=31;
+ 375   3          }
+ 376   2                break;
+ 377   2              case 3://set wk
+ 378   2              if (trg&0x01){//set
+ 379   3                  state=4;
+ 380   3                }
+ 381   2                if (trg&0x40)//+
+ 382   2                  if (++wk>7) wk=1;
+ 383   2                if (trg&0x02)//-
+ 384   2                  if (--wk <1) wk=7;
+ 385   2          if (cont&0x40)//long press
+ 386   2          if (++hold>=22){
+ 387   3            hold=0;
+ 388   3            if (++wk>7) wk=1;
+ 389   3          }
+ 390   2          if (cont&0x02)//long press
+ 391   2          if (++hold>=22){
+ 392   3            hold=0;
+ 393   3            if (--wk <1) wk=7;
+ 394   3          }
+ 395   2                break;
+ 396   2              case 4://set hr
+ 397   2              if (trg&0x01){//set
+ 398   3                  state=5;
+ 399   3                }
+ 400   2                if (trg&0x40)//+
+ 401   2                  if (++hour>23) hour=0;
+ 402   2                if (trg&0x02)//-
+ 403   2                  if (--hour>23) hour=23;
+ 404   2          if (cont&0x40)//long press
+ 405   2          if (++hold>=22){
+ 406   3            hold=0;
+ 407   3            if (++hour>23) hour=0;
+ 408   3          }
+ 409   2          if (cont&0x02)//long press
+ 410   2          if (++hold>=22){
+ 411   3            hold=0;
+ 412   3            if (--hour>23) hour=23;
+ 413   3          }
+ 414   2                break;
+ 415   2              case 5://set min
+ 416   2              if (trg&0x01){//set
+ 417   3                  state=6;
+ 418   3                }
+ 419   2                if (trg&0x40){//+
+ 420   3                  if (++min>59) min=0;
+ 421   3            ModifyTime(year,mth,day,wk,hour,min,sec);
+ 422   3            }
+ 423   2                if (trg&0x02){//-
+ 424   3                  if (--min >=59) min=59;
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 8   
+
+ 425   3            ModifyTime(year,mth,day,wk,hour,min,sec);
+ 426   3            }
+ 427   2          if (cont&0x40)//long press
+ 428   2          if (++hold>=22){
+ 429   3            hold=0;
+ 430   3                  if (++min>59) min=0;
+ 431   3            ModifyTime(year,mth,day,wk,hour,min,sec);
+ 432   3          }
+ 433   2          if (cont&0x02)//long press
+ 434   2          if (++hold>=22){
+ 435   3            hold=0;
+ 436   3                  if (--min >=59) min=59;
+ 437   3            ModifyTime(year,mth,day,wk,hour,min,sec);
+ 438   3          }
+ 439   2                break;
+ 440   2              case 6://set sec
+ 441   2              if (trg&0x01){//set
+ 442   3                  state=7;//turn back
+ 443   3                  ModifyTime(year,mth,day,wk,hour,min,sec);
+ 444   3                }
+ 445   2                if (trg&0x40){//+
+ 446   3                  if (++sec>59) sec=0;
+ 447   3                  ModifyTime(year,mth,day,wk,hour,min,sec);
+ 448   3                }
+ 449   2                if (trg&0x02){//-
+ 450   3                  if (--sec>59) sec=59;
+ 451   3                  ModifyTime(year,mth,day,wk,hour,min,sec);
+ 452   3                }
+ 453   2          if (cont&0x40)//long press
+ 454   2          if (++hold>=22){
+ 455   3            hold=0;
+ 456   3                  if (++sec>59) sec=0;
+ 457   3                  ModifyTime(year,mth,day,wk,hour,min,sec);
+ 458   3          }
+ 459   2          if (cont&0x02)//long press
+ 460   2          if (++hold>=22){
+ 461   3                  if (--sec>59) sec=59;
+ 462   3                  ModifyTime(year,mth,day,wk,hour,min,sec);
+ 463   3          }
+ 464   2                break;
+ 465   2              case 7://set on hr
+ 466   2              if (trg&0x01){//set
+ 467   3                  state=8;//turn back
+ 468   3            IapEraseSector(0);   //erase before write
+ 469   3            IapProgramByte(1,on_hr);
+ 470   3                }
+ 471   2                if (trg&0x40)//+
+ 472   2                  if (++on_hr>23) on_hr=0;
+ 473   2                if (trg&0x02)//-
+ 474   2                  if (--on_hr>23) on_hr=23;
+ 475   2          if (cont&0x40)//long press
+ 476   2          if (++hold>=22){
+ 477   3            hold=0;
+ 478   3            if (++on_hr>23) on_hr=0;
+ 479   3          }
+ 480   2          if (cont&0x02)//long press
+ 481   2          if (++hold>=22){
+ 482   3            hold=0;
+ 483   3            if (--on_hr>23) on_hr=23;
+ 484   3          }
+ 485   2                break;
+ 486   2              case 8://set off hr
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 9   
+
+ 487   2              if (trg&0x01){//set
+ 488   3                  state=9;//turn back
+ 489   3            IapProgramByte(2,off_hr);
+ 490   3                }
+ 491   2                if (trg&0x40)//+
+ 492   2                  if (++off_hr>23) off_hr=0;
+ 493   2                if (trg&0x02)//-
+ 494   2                  if (--off_hr>23) off_hr=23;
+ 495   2          if (cont&0x40)//long press
+ 496   2          if (++hold>=22){
+ 497   3            hold=0;
+ 498   3            if (++off_hr>23) off_hr=0;
+ 499   3          }
+ 500   2          if (cont&0x02)//long press
+ 501   2          if (++hold>=22){
+ 502   3            hold=0;
+ 503   3            if (--off_hr>23) off_hr=23;
+ 504   3          }
+ 505   2                break;     
+ 506   2          case 9://sec pos
+ 507   2              if (trg&0x01){//set
+ 508   3                  state=10;//turn back
+ 509   3            IapProgramByte(0,posSecOrTmp);
+ 510   3                }
+ 511   2                if (trg&0x40)//+
+ 512   2                  posSecOrTmp=!posSecOrTmp;
+ 513   2                if (trg&0x02)//-
+ 514   2                  posSecOrTmp=!posSecOrTmp;           
+ 515   2          break;  
+ 516   2              case 10://set al hr
+ 517   2              if (trg&0x01){//set
+ 518   3                  state=11;
+ 519   3            IapProgramByte(3,a1_hr);
+ 520   3                }
+ 521   2                if (trg&0x40)//+
+ 522   2                  if (++a1_hr>23) a1_hr=0;
+ 523   2                if (trg&0x02)//-
+ 524   2                  if (--a1_hr>23) a1_hr=23;
+ 525   2          if (cont&0x40)//long press
+ 526   2          if (++hold>=22){
+ 527   3            hold=0;
+ 528   3            if (++a1_hr>23) a1_hr=0;
+ 529   3          }
+ 530   2          if (cont&0x02)//long press
+ 531   2          if (++hold>=22){
+ 532   3            hold=0;
+ 533   3            if (--a1_hr>23) a1_hr=23;
+ 534   3          }
+ 535   2               break;
+ 536   2              case 11://set a1 min
+ 537   2              if (trg&0x01){//set
+ 538   3                  state=12;
+ 539   3            IapProgramByte(4,a1_min);
+ 540   3                }
+ 541   2                if (trg&0x40){//+
+ 542   3                  if (++a1_min>59) a1_min=0;
+ 543   3            
+ 544   3            }
+ 545   2                if (trg&0x02){//-
+ 546   3                  if (--a1_min >=59) a1_min=59;
+ 547   3            
+ 548   3            }
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 10  
+
+ 549   2          if (cont&0x40)//long press
+ 550   2          if (++hold>=22){
+ 551   3            hold=0;
+ 552   3                  if (++a1_min>59) a1_min=0;
+ 553   3            
+ 554   3          }
+ 555   2          if (cont&0x02)//long press
+ 556   2          if (++hold>=22){
+ 557   3            hold=0;
+ 558   3                  if (--a1_min >=59) a1_min=59;
+ 559   3            
+ 560   3          }
+ 561   2                break;
+ 562   2              case 12://set a1 sec
+ 563   2              if (trg&0x01){//set
+ 564   3                  state=13;//turn back
+ 565   3                  IapProgramByte(5,a1_sec);
+ 566   3                }
+ 567   2                if (trg&0x40){//+
+ 568   3                  if (++a1_sec>59) a1_sec=0;
+ 569   3                  
+ 570   3                }
+ 571   2                if (trg&0x02){//-
+ 572   3                  if (--a1_sec>59) a1_sec=59;
+ 573   3                  
+ 574   3                }
+ 575   2          if (cont&0x40)//long press
+ 576   2          if (++hold>=22){
+ 577   3            hold=0;
+ 578   3                  if (++a1_sec>59) a1_sec=0;
+ 579   3                  
+ 580   3          }
+ 581   2          if (cont&0x02)//long press
+ 582   2          if (++hold>=22){
+ 583   3                  if (--a1_sec>59) a1_sec=59;
+ 584   3                  
+ 585   3          }
+ 586   2                break;  
+ 587   2          case 13://enable alr 1
+ 588   2              if (trg&0x01){//set
+ 589   3                  state=14;//turn back
+ 590   3            IapProgramByte(6,alarm1_enable);
+ 591   3            SetAlarm(a1_hr,a1_min,a1_sec,alarm1_enable);//write
+ 592   3                }
+ 593   2                if (trg&0x40)//+
+ 594   2                  alarm1_enable=!alarm1_enable;
+ 595   2                if (trg&0x02)//-
+ 596   2                  alarm1_enable=!alarm1_enable;   
+ 597   2                TIMER=alarm1_enable;
+ 598   2          break;    
+ 599   2              case 14://set or change dimming
+ 600   2              if (trg&0x01){//set
+ 601   3                  state=0;//set year
+ 602   3                  get_show(dat);//5->0 M d w h m s
+ 603   3                  mth=dat[0];day=dat[1];wk=dat[2];hour=dat[3];min=dat[4];sec=dat[5];//get current time to modify
+ 604   3                  year=get_year();          
+ 605   3                }
+ 606   2               if (trg&0x40){//+
+ 607   3                  dimming++;
+ 608   3                  if (dimming<4)
+ 609   3                    mode=1;//hand
+ 610   3                  else if (dimming==4)
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 11  
+
+ 611   3                    mode=0;//auto
+ 612   3                  else if (dimming==5)
+ 613   3                    dimming=3,mode=1;
+ 614   3                  
+ 615   3                  if (!mode)
+ 616   3                    PROBE=1;
+ 617   3                  else
+ 618   3                    PROBE=0;
+ 619   3                  
+ 620   3                  dspseg[0]=dimming;
+ 621   3                  VOPEN=0;//wake up
+ 622   3                  adc_dimming();
+ 623   3               }
+ 624   2               if (trg&0x02){//-
+ 625   3                  if (--dimming>7)
+ 626   3                    dimming=0,VOPEN=1; 
+ 627   3                  dspseg[0]=dimming;
+ 628   3                  adc_dimming();
+ 629   3               }
+ 630   2                break;          
+ 631   2              default:break;
+ 632   2              }
+ 633   1      }
+ 634          void ringing(u8 t){
+ 635   1        u8 i;
+ 636   1        for ( i=0;i<t;i++){
+ 637   2          BEEP=0;
+ 638   2          mydelay_us(150);  
+ 639   2          BEEP=1;
+ 640   2          mydelay_us(150);
+ 641   2        }
+ 642   1      }
+ 643          void adc_dimming(void){
+ 644   1              u8 tmp;
+ 645   1        //adc
+ 646   1        if (!mode){
+ 647   2            tmp=getADCresult(1);//ch1 8bit
+ 648   2      //      dspseg[4]=tmp/100 +10;
+ 649   2      //      dspseg[5]=tmp%100/10+10;
+ 650   2      //      dspseg[6]=tmp%10+10;  
+ 651   2            dimming=tmp/64;//256/4=64
+ 652   2        }
+ 653   1            OpenStrobe_PT6311();
+ 654   1            WriteByte_PT6311(CMD_DisplaySetting|0x8|dimming);//0x80:on 11/16  
+ 655   1      }
+ 656          void normalDisplay(void){//display and alarm
+ 657   1        u8 dat[5];static u8 last;
+ 658   1            if (tmp_flag){//5s
+ 659   2              tmp_flag=0;
+ 660   2              //humity and temp
+ 661   2              EA=0;//clr int
+ 662   2              GetData(dat);//interval more than 1s
+ 663   2              Check(dat);
+ 664   2              EA=1;
+ 665   2            if (!posSecOrTmp){//down
+ 666   3              dspseg[3]=dat[2];//tmp
+ 667   3            }     
+ 668   2            else{//up
+ 669   3              dspseg[10]=dat[2]/10;//tmp
+ 670   3              dspseg[11]=dat[2]%10;//tmp
+ 671   3            }
+ 672   2              
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 12  
+
+ 673   2              dspseg[13]=dat[0]/10;//humity
+ 674   2              dspseg[14]=dat[0]%10;//humity
+ 675   2              dspseg[15]=32;//'%'
+ 676   2              
+ 677   2              //date
+ 678   2              get_date(dat);
+ 679   2              dspseg[4]=dat[0]/10;    //mth
+ 680   2              dspseg[5]=dat[0]%10;      
+ 681   2              dspseg[6]=dat[1]/10;    //day
+ 682   2              dspseg[7]=dat[1]%10;
+ 683   2              //dspseg[8]=21;//'-' addres:21
+ 684   2              //wk
+ 685   2              dspseg[8]=dat[2]+10;  //offset to chinese ui  
+ 686   2              //adc auto dimming
+ 687   2              adc_dimming();      
+ 688   2            }
+ 689   1            //time
+ 690   1            get_time(dat);
+ 691   1            dis_hr=dat[0];
+ 692   1            dis_min=dat[1];
+ 693   1            dis_sec=dat[2];
+ 694   1            
+ 695   1            dspseg[0]=dis_hr/10;    //hr/10
+ 696   1            dspseg[1]=(dis_hr%10)*10+dat[1]/10;   //hr%10 + min/10
+ 697   1            dspseg[2]=dis_min%10;   //min%10
+ 698   1            dspseg[9]=CLR;//clr
+ 699   1            if (!posSecOrTmp){//down
+ 700   2              dspseg[10]=dis_sec/10;      //sec
+ 701   2              dspseg[11]=dis_sec%10;    
+ 702   2              dspseg[12]=CLR;
+ 703   2            }     
+ 704   1            else{//up
+ 705   2              dspseg[3]=dis_sec;      //sec
+ 706   2              dspseg[12]=10;//''c'        
+ 707   2            }
+ 708   1            //ui
+ 709   1            if (last!=dis_sec)        //for col blink
+ 710   1              last=dis_sec,COL=!COL;
+ 711   1            if (dis_hr>12)
+ 712   1              PM=1,AM=0;
+ 713   1            else
+ 714   1              PM=0,AM=1;
+ 715   1            //alarm
+ 716   1            if (alarm1_flag){//alarm??
+ 717   2              if (dis_min!=alarmMin)
+ 718   2                BEEP=1,alarm1_flag=0;
+ 719   2              else{
+ 720   3                ringing(200);
+ 721   3                ringing(200);
+ 722   3              }
+ 723   2            }   
+ 724   1            //on off vopen         
+ 725   1            if (dis_hr==off_hr)//match sw off hour 
+ 726   1              if (!off_flag){ 
+ 727   2                off_flag=1;   //set off flag
+ 728   2                VOPEN=1;    //clr
+ 729   2                mode=1;//hand
+ 730   2              }
+ 731   1            if (dis_hr==on_hr)//match sw on hour
+ 732   1              VOPEN=0,off_flag=0,mode=0;//open pwr auto dimming clr
+ 733   1      }
+ 734          void keyscan(void)
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 13  
+
+ 735          {
+ 736   1           unsigned char tmp=P3^0xff;
+ 737   1           trg=tmp&(tmp^cont);
+ 738   1           cont=tmp;
+ 739   1      }
+ 740          void alarm_int0_init(){
+ 741   1        EA = 1;
+ 742   1        EX0 = 1;
+ 743   1        IT0 = 0;//电平的触发方式
+ 744   1      }
+ 745          void adc_init()//ch1
+ 746          {
+ 747   1        P1ASF=0x02;
+ 748   1        ADC_CONTR = 0X89;
+ 749   1        ADC_RES=0;
+ 750   1      }
+ 751          unsigned int getADCresult(u8 ch)
+ 752          {
+ 753   1        unsigned int buf=0;
+ 754   1        ADC_CONTR = 0x88 | ch;
+ 755   1        _nop_();
+ 756   1        _nop_();
+ 757   1        _nop_();
+ 758   1        _nop_();
+ 759   1        while (!(ADC_CONTR&0X10));
+ 760   1        //buf = (ADC_RES<<2)|ADC_RESL; //10bit
+ 761   1        buf = ADC_RES;
+ 762   1        return buf;
+ 763   1      }
+ 764          void t0_init(void){//125us
+ 765   1        AUXR &= 0x7F;   //?????12T??
+ 766   1        TMOD &= 0xF0;   //???????
+ 767   1        TMOD |= 0x02;   //???????
+ 768   1        TL0 = -125;   //??????
+ 769   1        TH0 = -125;   //???????
+ 770   1        TF0 = 0;    //??TF0??
+ 771   1        TR0 = 1;    //???0????
+ 772   1        ET0 = 1;
+ 773   1        EA = 1;
+ 774   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   4491    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     35      16
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      8    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
