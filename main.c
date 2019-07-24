@@ -10,7 +10,7 @@
 //add:auto back
 //set year
 //add git repo
-
+//this is new board
 
 //rom
 //addr data
