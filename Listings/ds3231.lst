@@ -1,4 +1,4 @@
-C51 COMPILER V9.56.0.0   DS3231                                                            07/24/2019 14:16:19 PAGE 1   
+C51 COMPILER V9.56.0.0   DS3231                                                            07/24/2019 14:23:51 PAGE 1   
 
 
 C51 COMPILER V9.56.0.0, COMPILATION OF MODULE DS3231
@@ -62,7 +62,7 @@ line level    source
   52   1          temp=DEC2BCD(wk);
   53   1          DS3231IIC_Write_One_Byte(DS3231_WEEK,temp);   //修改年 //week   
   54   1        
-C51 COMPILER V9.56.0.0   DS3231                                                            07/24/2019 14:16:19 PAGE 2   
+C51 COMPILER V9.56.0.0   DS3231                                                            07/24/2019 14:23:51 PAGE 2   
 
   55   1          temp=DEC2BCD(hou);
   56   1          DS3231IIC_Write_One_Byte(DS3231_HOUR,temp);   //修改时
@@ -126,7 +126,7 @@ line level    source
  114          {
  115   1          u8 temp[2]; 
  116   1        //temph  _(sign) _ _ _, _ _ _ _
-C51 COMPILER V9.56.0.0   DS3231                                                            07/24/2019 14:16:19 PAGE 3   
+C51 COMPILER V9.56.0.0   DS3231                                                            07/24/2019 14:23:51 PAGE 3   
 
  117   1        //templ (point)_ _0 0, 0 0 0 0 
  118   1          DS3231IIC_BufferRead(temp,DS3231_TEMPERATUREH,2);  

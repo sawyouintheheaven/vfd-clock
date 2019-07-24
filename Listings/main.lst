@@ -1,4 +1,4 @@
-C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 1   
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:23:51 PAGE 1   
 
 
 C51 COMPILER V9.56.0.0, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   52          //4 set hour
   53          //5 set min
   54          //6 set sec
-C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 2   
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:23:51 PAGE 2   
 
   55          //7 set on hr
   56          //8 set off hour
@@ -126,7 +126,7 @@ line level    source
  114   3            dspseg[4]='I';dspseg[5]='R';dspseg[6]=CLR;
  115   3            tmp=IR_data[2]>>4;//bcd
  116   3            if (tmp>9)tmp+=7;//display 10 with a
-C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 3   
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:23:51 PAGE 3   
 
  117   3            dspseg[7]=tmp+10;
  118   3            tmp=IR_data[2]&0x0f;//bcd
@@ -190,7 +190,7 @@ line level    source
  176          void Alarm_Int0() interrupt 0
  177          {
  178   1        u8 dat[3];
-C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 4   
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:23:51 PAGE 4   
 
  179   1        get_time(dat);
  180   1        alarm1_flag=1;  //闹铃标志位置位
@@ -254,7 +254,7 @@ line level    source
  238   2                break;
  239   2              case 2:
  240   2                dspseg[4]='S';dspseg[5]='E';dspseg[6]='T';dspseg[7]=CLR;
-C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 5   
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:23:51 PAGE 5   
 
  241   2                dspseg[8]='D';dspseg[9]='A';dspseg[10]='Y';dspseg[11]=dspseg[12]=dspseg[13]=CLR;
  242   2                dspseg[14]=day/10;dspseg[15]=day%10;     
@@ -318,7 +318,7 @@ line level    source
  299   2                dspseg[4]='A';dspseg[5]='L';dspseg[6]='M';dspseg[7]=CLR;dspseg[8]='S';dspseg[9]='W';dspseg[10]=dspseg
              -[11]=CLR;
  300   2                if (alarm1_enable){
-C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 6   
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:23:51 PAGE 6   
 
  301   3                  dspseg[12]='O';dspseg[13]='N';dspseg[14]=dspseg[15]=CLR;
  302   3                }
@@ -382,7 +382,7 @@ line level    source
  360   3                  state=3;
  361   3                }
  362   2                if (trg&0x40)//+
-C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 7   
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:23:51 PAGE 7   
 
  363   2                  if (++day>31) day=1;
  364   2                if (trg&0x02)//-
@@ -446,7 +446,7 @@ line level    source
  422   3            }
  423   2                if (trg&0x02){//-
  424   3                  if (--min >=59) min=59;
-C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 8   
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:23:51 PAGE 8   
 
  425   3            ModifyTime(year,mth,day,wk,hour,min,sec);
  426   3            }
@@ -510,7 +510,7 @@ line level    source
  484   3          }
  485   2                break;
  486   2              case 8://set off hr
-C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 9   
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:23:51 PAGE 9   
 
  487   2              if (trg&0x01){//set
  488   3                  state=9;//turn back
@@ -574,7 +574,7 @@ line level    source
  546   3                  if (--a1_min >=59) a1_min=59;
  547   3            
  548   3            }
-C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 10  
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:23:51 PAGE 10  
 
  549   2          if (cont&0x40)//long press
  550   2          if (++hold>=22){
@@ -638,7 +638,7 @@ line level    source
  608   3                  if (dimming<4)
  609   3                    mode=1;//hand
  610   3                  else if (dimming==4)
-C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 11  
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:23:51 PAGE 11  
 
  611   3                    mode=0;//auto
  612   3                  else if (dimming==5)
@@ -702,7 +702,7 @@ line level    source
  670   3              dspseg[11]=dat[2]%10;//tmp
  671   3            }
  672   2              
-C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 12  
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:23:51 PAGE 12  
 
  673   2              dspseg[13]=dat[0]/10;//humity
  674   2              dspseg[14]=dat[0]%10;//humity
@@ -766,7 +766,7 @@ line level    source
  732   1              VOPEN=0,off_flag=0,mode=0;//open pwr auto dimming clr
  733   1      }
  734          void keyscan(void)
-C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:16:19 PAGE 13  
+C51 COMPILER V9.56.0.0   MAIN                                                              07/24/2019 14:23:51 PAGE 13  
 
  735          {
  736   1           unsigned char tmp=P3^0xff;

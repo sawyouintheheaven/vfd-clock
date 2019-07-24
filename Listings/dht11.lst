@@ -1,4 +1,4 @@
-C51 COMPILER V9.56.0.0   DHT11                                                             07/24/2019 14:16:20 PAGE 1   
+C51 COMPILER V9.56.0.0   DHT11                                                             07/24/2019 14:23:51 PAGE 1   
 
 
 C51 COMPILER V9.56.0.0, COMPILATION OF MODULE DHT11
@@ -62,7 +62,7 @@ line level    source
   52   1      
   53   1              t = 80;                                        //设置超时等待时间
   54   1              while(DATA_IO && t--);                //等待DHT11拉低总线
-C51 COMPILER V9.56.0.0   DHT11                                                             07/24/2019 14:16:20 PAGE 2   
+C51 COMPILER V9.56.0.0   DHT11                                                             07/24/2019 14:23:51 PAGE 2   
 
   55   1              if(t == 0)                                //超时
   56   1              {
@@ -126,7 +126,7 @@ line level    source
              -所得结果的末8位。
  114          **********************************************************************************************/
  115          char Check (u8 *dat)
-C51 COMPILER V9.56.0.0   DHT11                                                             07/24/2019 14:16:20 PAGE 3   
+C51 COMPILER V9.56.0.0   DHT11                                                             07/24/2019 14:23:51 PAGE 3   
 
  116          {
  117   1              u8 i;                        //for循环变量

@@ -1,4 +1,4 @@
-C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 1   
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:23:51 PAGE 1   
 
 
 C51 COMPILER V9.56.0.0, COMPILATION OF MODULE PT6311
@@ -62,7 +62,7 @@ line level    source
   52   1      }
   53          void Delay1ms()   //@12.000MHz
   54          {
-C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 2   
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:23:51 PAGE 2   
 
   55   1        unsigned char i, j;
   56   1      
@@ -98,21 +98,21 @@ line level    source
   86            0x2AC9,/*Îå*/
   87            0x14C8,/*Áù*/
   88            0x2162,/*Æß*/
-  89            0x2727,/*0*///18
-  90            0x0224,/*1*/
+  89            0x2307,/*0*///0x2727      //18
+  90            0x0204,/*1*///0x0224
   91            0x21C5,/*2*/
   92            0x22C5,/*3*/
   93            0x02C6,/*4*/
   94            0x22C3,/*5*/
   95            0x23C3,/*6*/
-  96            0x0421,/*7*///0x0205,/*7*/
+  96            0x0205,/*7*///0x0421
   97            0x23C7,/*8*/
   98            0x22C7,/*9*/
   99            0x08C8,/*+*///28
  100            0x0808,/*|*/ 
  101            0x1CF8,/***/
  102            0x0420,/*/*/
- 103            0x1632,/*%*/  
+ 103            0x0622,/*%*///0x1632
  104            0x0000,//clr //33
  105            0x2000,/*_*/ //34
  106            0x06a4,/*A*/
@@ -126,7 +126,7 @@ line level    source
  114            0x2809,/*I*/
  115            0x1204,/*J*/
  116            0x1162,/*K*/
-C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 3   
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:23:51 PAGE 3   
 
  117            0x2102,/*L*/
  118            0x0336,/*M*/
@@ -190,7 +190,7 @@ line level    source
  176   3            WriteByte_PT6311(font[dspseg[i]]>>8);//high byte
  177   3            WriteByte_PT6311(0);
  178   3          }
-C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 4   
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:23:51 PAGE 4   
 
  179   2        }   
  180   1        STB=1;
@@ -254,7 +254,7 @@ line level    source
  238   1      //      WriteByte_PT6311(font[dspseg[i]]);//low byte
  239   1      //      WriteByte_PT6311(font[dspseg[i]]>>8);//mid byte
  240   1      //      WriteByte_PT6311(0);  //high byte
-C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 5   
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:23:51 PAGE 5   
 
  241   1      //    }
  242   1      //  } 
@@ -318,7 +318,7 @@ line level    source
  300             {
  301               if (i==0)  //for segment 0 display temp lvl
  302               {
-C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 6   
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:23:51 PAGE 6   
 
  303                  tmp=Pow2(dspseg[0]) - 1;  
  304                  tmp<<=4;  
@@ -382,7 +382,7 @@ line level    source
  362            }
  363          }
  364          void DeDisplayVfd(void)
-C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 7   
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:23:51 PAGE 7   
 
  365          {
  366            u8 len,i;
@@ -446,7 +446,7 @@ line level    source
  424          
  425              OpenStrobe_PT6311();
  426              WriteByte_PT6311(CMD_DataSetting|0x04); //fixed addr
-C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:16:19 PAGE 8   
+C51 COMPILER V9.56.0.0   PT6311                                                            07/24/2019 14:23:51 PAGE 8   
 
  427          
  428              for (len=0;len<30;len++)
